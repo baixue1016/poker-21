@@ -9,7 +9,8 @@ function getPartSum(formatted) {
     let a = _.chain(formatted).filter(x=> x !== 'A')
         .map(x=> {
             if (x === 'J' || x === 'Q' || x === 'K') {
-                return _.replace(x, x, 10);
+                //   return _.replace(x, x, 10);
+                return '10';
             }
             else {
                 return x;
