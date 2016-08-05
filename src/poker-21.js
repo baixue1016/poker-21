@@ -11,10 +11,7 @@ function convertJkqToNumberCards(formattedInput) {
 
 function getPointAndCount(numberCards) {
     let initialSum = _(numberCards).map(x => x === 'A' ? 1 : _.parseInt(x)).sum();
-    let point = _.reduce(numberCards, resultSum => {
-        let trySum = resultSum + 10;
-        return trySum > 21 ? resultSum : trySum;
-    }, initialSum);
+    let point = initialSum + 10 > 21 ? initialSum : initialSum + 10;
 
     return {point, count: numberCards.length};
 }
