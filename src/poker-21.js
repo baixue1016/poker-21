@@ -1,87 +1,48 @@
 'use strict';
 let _ = require('lodash');
 
-function dealString(input) {
-    return _.split(input, '-');
+function getCards(input) {
+    return [...input].filter(x=> x !== '-');
 }
 
-function getPartSum(formatted) {
-    let a = _.chain(formatted).filter(x=> x !== 'A')
-        .map(x=> {
-            if (x === 'J' || x === 'Q' || x === 'K') {
-                //   return _.replace(x, x, 10);
-                return '10';
-            }
-            else {
-                return x;
-            }
-        }).value();
-    return _(a).map(x=> _.parseInt(x)).sum();
+function convertJkqToNumberCards(formattedInput) {
+    return _.map(formattedInput, x=> ['J', 'Q', 'K'].includes(x) ? '10' : x)
 }
 
-function dealA(formatted, partSum) {
-    let a = _.filter(formatted, x=> x === 'A');
-    let lenA = a.length;
-    let sum;
-    let sub = 21 - partSum;
-    if (sub < 0) {
-        sum = partSum + lenA;
-        return sum;
-    } else {
-        let sumA;
-        if (_.floor(sub / 11) === 0) {
-            sumA = lenA;
-            sum = partSum + sumA;
-            return sum;
-        } else {
-            sumA = 11 + (lenA - 1);
-            sum = partSum + sumA;
-            return sum;
-        }
-    }
+function getPointAndCount(numberCards) {
+    let initialSum = _(numberCards).map(x => x === 'A' ? 1 : _.parseInt(x)).sum();
+    let point = _.reduce(numberCards, resultSum => {
+        let trySum = resultSum + 10;
+        return trySum > 21 ? resultSum : trySum;
+    }, initialSum);
+
+    return {point, count: numberCards.length};
 }
 
-function getWinner(sumA, sumB, formatted_a, formatted_b) {
-    if (sumA <= 21 && sumB <= 21) {
-        if (sumA < sumB) {
-            return 'B is winner';
-        } else if (sumA > sumB) {
-            return 'A is winner';
-        } else if (sumA === sumB) {
-            let len_a = formatted_a.length;
-            let len_b = formatted_b.length;
-
-            if (len_a === len_b) {
-                return 'no winner';
-            } else if (len_a < len_b) {
-                return 'A is winner';
-            } else {
-                return 'B is winner';
-            }
-        }
-    } else if (sumA > 21 && sumB < 21) {
-        return 'B is winner';
-    } else if (sumA < 21 && sumB > 21) {
-        return 'A is winner';
-    } else if (sumA > 21 && sumB > 21) {
-        return 'no winner';
-    }
+function getComparedResult(aPointAndCount, bPointAndCount) {
+    let {point:aPoint, count:aCount} = aPointAndCount;
+    let {point:bPoint, count:bCount} = bPointAndCount;
+    if (aPoint > 21 && bPoint > 21) return "tied";
+    if (aPoint > 21) return 'B won';
+    if (bPoint > 21) return 'A won';
+    if (aPoint > bPoint) return 'A won';
+    if (bPoint > aPoint) return 'B won';
+    if (aCount > bCount) return 'B won';
+    if (bCount > aCount) return 'A won';
+    return 'tied';
 }
 
-function pokerWin(input1, input2) {
-    let formatted1 = dealString(input1);
-    let formatted2 = dealString(input2);
-    let partSum1 = getPartSum(formatted1);
-    let partSum2 = getPartSum(formatted2);
-    let sum1 = dealA(formatted1, partSum1);
-    let sum2 = dealA(formatted2, partSum2);
-    return getWinner(sum1, sum2, formatted1, formatted2);
+function printWinner(inputA, inputB) {
+    let aPointAndCount = getPointAndCount(convertJkqToNumberCards(getCards(inputA)));
+    let bPointAndCount = getPointAndCount(convertJkqToNumberCards(getCards(inputB)));
+    let winner = getComparedResult(aPointAndCount, bPointAndCount);
+    console.log(winner);
 }
 
 module.exports = {
-    dealString: dealString,
-    getPartSum: getPartSum,
-    dealA: dealA,
-    getWinner: getWinner,
-    pokerWin: pokerWin
+    getCards,
+    convertJkqToNumberCards,
+    getPointAndCount,
+    getComparedResult,
+    printWinner
 };
